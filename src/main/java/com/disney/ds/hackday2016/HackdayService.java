@@ -9,17 +9,16 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
+import javax.net.ssl.HttpsURLConnection;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -31,7 +30,7 @@ public class HackdayService {
     private static Logger log = Logger.getLogger(HackdayService.class);
 
     private Queue<ImageDataExtraction> imageExtraction;//= new CircularFifoQueue<>(size);
-    private List<String> imageUrls = new LinkedList<>();
+    private LinkedList<String> imageUrls = new LinkedList<>();
     private List<String> imageList= new ArrayList<String>();
     private String googleVisionApi;
     private String postJsonString;
@@ -44,6 +43,9 @@ public class HackdayService {
     final private String [] tags = {"disney","disneyworld","disneyland","disneystore","disneyparks"};
     private String instagramBaseUrl;
 
+    private List<String> cookies;
+    private final String USER_AGENT = "Mozilla/5.0";
+
 
     @Autowired
     public HackdayService(@Value("${image.queue.size}") int size,@Value("${google.vision.api}") String googleVisionApi,@Value("${post.json.string}") String postJsonString,@Value("${instagram.base.url}")String instagramBaseUrl){
@@ -51,15 +53,15 @@ public class HackdayService {
         this.googleVisionApi = googleVisionApi;
         this.postJsonString = postJsonString;
         restTemplate = new RestTemplate();
+        this.instagramBaseUrl = instagramBaseUrl;
+    }
+
+    public String getImageQueue() throws Exception {
         faceArray = new ArrayList<>();
         labelArray = new ArrayList<>();
         textArray = new ArrayList<>();
         landmarkArray = new ArrayList<>();
         logoArray = new ArrayList<>();
-        this.instagramBaseUrl = instagramBaseUrl;
-    }
-
-    public String getImageQueue() throws Exception {
 
         String url = getNextImageUrl();//"http://vignette2.wikia.nocookie.net/disney/images/b/b3/Walt-Disney-Logo.jpg/revision/latest?cb=20130721170547";//"https://scontent-lax3-1.cdninstagram.com/t51.2885-15/s640x640/sh0.08/e35/c0.134.1080.1080/12797960_1537628549869846_1129145049_n.jpg?ig_cache_key=MTE5NzM0OTQ3NDEwODQ2NzE3Ng%3D%3D.2.c";//getNextImageUrl();
         byte[] imageBytes = restTemplate.getForObject(url, byte[].class);
@@ -140,37 +142,82 @@ public class HackdayService {
 
     private String getNextImageUrl() throws Exception {
         String url;
-        try{//empty
-            url = imageUrls.remove(0);
-        }catch (Exception e){
+        url = imageUrls.poll();
+        if(url == null){
             imageUrls = refillInstagramData();
-            url = imageUrls.remove(0);
+            url = imageUrls.poll();
         }
         return url;
     }
 
-    //Cannot scrape Instagram
-    private List<String> refillInstagramData() throws IOException{
+    //Cannot scrape Instagram with Jsoup
+    private LinkedList<String> refillInstagramData() throws Exception{
         log.info("Refilling Instagram Data...");
-        List<String> refill = new LinkedList<>();
-        //temp.add("aaa");
-        String url =instagramBaseUrl+ tags[(int)(Math.random() * 50)%tags.length]+"/";
-        ResponseEntity<String> temp = restTemplate.getForEntity(url,String.class);
-        System.out.println(temp.getBody());
+        LinkedList<String> refill = new LinkedList<>();
 
-        Document doc = Jsoup.connect(instagramBaseUrl+ tags[(int)(Math.random() * 50)%tags.length]+"/").userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.120 Safari/535.2").followRedirects(true).get();
-        //System.out.println(doc);
-        System.out.println(doc.toString().split("img").length);
-        Elements images = doc.getElementsByTag("img");
-        System.out.println(images.size());
+        String response = GetPageContent(instagramBaseUrl+ tags[(int)(Math.random() * 50)%tags.length]+"/");
+        String [] resp = response.split("\"display_src\":\"");
+        System.out.println(resp.length);
 
-        for(Element image:images){
-            System.out.println(image.absUrl("src"));
-            refill.add(image.absUrl("src"));
+        for(int i=1; i<resp.length; i++){
+            String imageUrl = resp[i].split("\"")[0].replace("\\","");
+            System.out.println(imageUrl);
+            refill.add(imageUrl);
             if(refill.size() >= 200){
                 break;
             }
         }
+
+        //Document doc = Jsoup.connect(instagramBaseUrl+ tags[(int)(Math.random() * 50)%tags.length]+"/?hl=zh-cn").userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.120 Safari/535.2").followRedirects(true).get();
+//        Document doc = new Document(response);
+//        System.out.println(doc.toString().split("img").length);
+//        Elements images = doc.getElementsByTag("img");
+//        System.out.println(images.size());
+//
+//        for(Element image:images){
+//            System.out.println(image.absUrl("src"));
+//            refill.add(image.absUrl("src"));
+//            if(refill.size() >= 200){
+//                break;
+//            }
+//        }
         return refill;
     }
+
+    private String GetPageContent(String url) throws Exception {
+
+        URL obj = new URL(url);
+        HttpsURLConnection conn = (HttpsURLConnection) obj.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setUseCaches(false);
+
+        conn.setRequestProperty("User-Agent", USER_AGENT);
+        conn.setRequestProperty("Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+
+        if (cookies != null) {
+            for (String cookie : cookies) {
+                conn.addRequestProperty("Cookie", cookie);
+            }
+        }
+        int responseCode = conn.getResponseCode();
+        log.info("Sending 'GET' request to URL : {}" + url);
+        log.info("Response Code : " + responseCode);
+
+        BufferedReader in =
+                new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        // Get the response cookies
+        this.cookies = conn.getHeaderFields().get("Set-Cookie");
+        return response.toString();
+    }
 }
+
