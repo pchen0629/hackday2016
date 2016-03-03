@@ -1,0 +1,20 @@
+#myCarousel {
+    margin-top: 40px;
+
+}
+
+.item {
+    border:1px solid #eee;
+    width:320px;
+    height:190px;
+    margin:0 auto;
+    padding:10px;
+}
+
+
+
+.carousel-content {
+    color:black;
+    display:flex;
+    align-items:center;
+}
