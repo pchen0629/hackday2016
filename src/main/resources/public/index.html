@@ -7,6 +7,12 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+
+    <link type="text/css" rel="stylesheet" href="../assets/css/lightslider.css" />
+
+    <script src="../assets/js/lightslider.js"></script>
+
     <!-- Le styles -->
     <link href="../assets/css/bootstrap.css" rel="stylesheet">
     <style>
@@ -15,11 +21,13 @@
         }
     </style>
     <link href="../assets/css/bootstrap-responsive.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
     <script src="../assets/js/html5shiv.js"></script>
     <![endif]-->
+
 
     <!-- Fav and touch icons -->
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
@@ -52,28 +60,102 @@
 </div>
 
 <div class="container">
+    <ul id="lightSlider">
+        <li>
+            <h3>First Slide1</h3>
+            <p><img src="http://www.gravatar.com/avatar/3328b6fe6909afdd05010519e05d63e0/?default=&s=80"> Lorem ipsum Cupidatat quis pariatur anim.</p>
+        </li>
+        <li>
+            <h3>Second Slide2</h3>
+            <p>Lorem ipsum Excepteur amet adipisicing fugiat velit nisi.</p>
+        </li>
+        <li>
+            <h3>Second Slide3</h3>
+            <p>Lorem ipsum Excepteur amet adipisicing fugiat velit nisi.</p>
+        </li>
+        <li>
+            <h3>Second Slide4</h3>
+            <p>Lorem ipsum Excepteur amet adipisicing fugiat velit nisi.</p>
+        </li>
 
-    <h1>Bootstrap starter template</h1>
-    <p>Use this document as a way to quick start any new project.<br> All you get is this message and a barebones HTML document.</p>
+    </ul>
+</div>
+<!-- /container -->
 
-</div> <!-- /container -->
 
-<!-- Le javascript
-================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
-<script src="../assets/js/jquery.js"></script>
-<script src="../assets/js/bootstrap-transition.js"></script>
-<script src="../assets/js/bootstrap-alert.js"></script>
-<script src="../assets/js/bootstrap-modal.js"></script>
-<script src="../assets/js/bootstrap-dropdown.js"></script>
-<script src="../assets/js/bootstrap-scrollspy.js"></script>
-<script src="../assets/js/bootstrap-tab.js"></script>
-<script src="../assets/js/bootstrap-tooltip.js"></script>
-<script src="../assets/js/bootstrap-popover.js"></script>
-<script src="../assets/js/bootstrap-button.js"></script>
-<script src="../assets/js/bootstrap-collapse.js"></script>
-<script src="../assets/js/bootstrap-carousel.js"></script>
-<script src="../assets/js/bootstrap-typeahead.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#lightSlider").lightSlider({
+            item: 3,
+            autoWidth: false,
+            slideMove: 1, // slidemove will be 1 if loop is true
+            slideMargin: 10,
+            adaptiveHeight:true,
+            addClass: '',
+            mode: "slide",
+            useCSS: true,
+            //cssEasing: 'ease', //'cubic-bezier(0.25, 0, 0.25, 1)',//
+            //easing: 'linear', //'for jquery animation',////
+            easing: 'cubic-bezier(0.25, 0, 0.25, 1)',
+
+           // speed: 400, //ms'
+            auto: true,
+            loop: true,
+            slideEndAnimation: false,
+           // pause: 2000,
+
+        //    keyPress: false,
+        //    controls: true,
+         //   prevHtml: '',
+         //   nextHtml: '',
+
+         //   rtl:false,
+         //   adaptiveHeight:false,
+
+            vertical:false,
+            verticalHeight:100,
+          //  vThumbWidth:100,
+
+          //  thumbItem:10,
+            pager: false,
+            gallery: false,
+            galleryMargin: 5,
+            thumbMargin: 5,
+            currentPagerPosition: 'middle',
+
+            enableTouch:false,
+            enableDrag:false,
+            freeMove:false,
+            swipeThreshold: 40,
+
+            responsive : [],
+
+            onBeforeStart: function (el) {},
+            onSliderLoad: function (el) {},
+            onBeforeSlide: function (el) {
+                $('#current').text(el.getCurrentSlideCount());
+            },
+            onAfterSlide: function (el) {},
+            onBeforeNextSlide: function (el) {
+                //alert(JSON.stringify(el));
+                $.getJSON( "getImageQueue", function( data ) {
+                    var items = [];
+
+                    //$.remove("#lightSlider");
+                    $.each( data, function( key, val ) {
+
+                        var newEl = ' <li class=""> <a href="javascript:void(0)"><img src="'+val.url+'" height="50" width="50"/></a><p>'+val.labelDetection.toString()+'</p> </li>';
+                        $(newEl).appendTo("#lightSlider");
+                        el.refresh();
+                    });
+
+                });
+
+            },
+            onBeforePrevSlide: function (el) {}
+        });
+    });
+</script>
 
 </body>
 </html>
