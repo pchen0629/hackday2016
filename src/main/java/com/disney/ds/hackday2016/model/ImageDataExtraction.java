@@ -6,26 +6,44 @@ import java.util.List;
  * Created by peichen on 3/2/16.
  */
 public class ImageDataExtraction {
-    List<String> labelDetection;
-    List<String> textDetection;
-    List<String> landmarkDetection;
-    List<String> logoDetection;
     String url;
+    List<FaceDetectionUnit> faceDetection;
+    List<ImageDataUnit> labelDetection;
+    List<String> textDetection;
+    List<ImageDataUnit> landmarkDetection;
+    List<ImageDataUnit> logoDetection;
 
-    public ImageDataExtraction(String url, List<String> labelDetection, List<String> textDetection, List<String> landmarkDetection, List<String> logoDetection) {
+    public ImageDataExtraction(String url, List<FaceDetectionUnit> faceDetection, List<ImageDataUnit> labelDetection, List<String> textDetection, List<ImageDataUnit> landmarkDetection, List<ImageDataUnit> logoDetection) {
         this.url = url;
+        this.faceDetection = faceDetection;
         this.labelDetection = labelDetection;
         this.textDetection = textDetection;
         this.landmarkDetection = landmarkDetection;
         this.logoDetection = logoDetection;
     }
 
-    public List<String> getLabelDetection() {
+    public String getUrl() {
 
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public List<FaceDetectionUnit> getFaceDetection() {
+        return faceDetection;
+    }
+
+    public void setFaceDetection(List<FaceDetectionUnit> faceDetection) {
+        this.faceDetection = faceDetection;
+    }
+
+    public List<ImageDataUnit> getLabelDetection() {
         return labelDetection;
     }
 
-    public void setLabelDetection(List<String> labelDetection) {
+    public void setLabelDetection(List<ImageDataUnit> labelDetection) {
         this.labelDetection = labelDetection;
     }
 
@@ -37,19 +55,19 @@ public class ImageDataExtraction {
         this.textDetection = textDetection;
     }
 
-    public List<String> getLandmarkDetection() {
+    public List<ImageDataUnit> getLandmarkDetection() {
         return landmarkDetection;
     }
 
-    public void setLandmarkDetection(List<String> landmarkDetection) {
+    public void setLandmarkDetection(List<ImageDataUnit> landmarkDetection) {
         this.landmarkDetection = landmarkDetection;
     }
 
-    public List<String> getLogoDetection() {
+    public List<ImageDataUnit> getLogoDetection() {
         return logoDetection;
     }
 
-    public void setLogoDetection(List<String> logoDetection) {
+    public void setLogoDetection(List<ImageDataUnit> logoDetection) {
         this.logoDetection = logoDetection;
     }
 }

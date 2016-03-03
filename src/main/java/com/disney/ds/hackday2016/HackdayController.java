@@ -38,7 +38,8 @@ public class HackdayController {
             String imageResponse = hackdayService.getImageQueue();
             return new ResponseEntity<>(imageResponse, responseHeaders, HttpStatus.CREATED);
         } catch (Exception ex) {
-            return new ResponseEntity<>(methodName + " Exception: " + ex + " stacktrace: " + ex.getMessage(), responseHeaders, HttpStatus.CREATED);
+            ex.printStackTrace();
+            return new ResponseEntity<>(methodName + " Exception: " + ex + " stacktrace: " + ex.getStackTrace().toString(), responseHeaders, HttpStatus.CREATED);
         }
     }
 
